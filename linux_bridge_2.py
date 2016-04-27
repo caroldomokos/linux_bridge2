@@ -32,7 +32,7 @@ class LinuxBridge (object) :
         self.module = module
         self.bridge = module.params['bridge']
         self.state = module.params['state']
-
+	self.stp =  module.params['stp']
         return
 
     def brctl (self, cmd) :
@@ -55,7 +55,16 @@ class LinuxBridge (object) :
 
         return 
 
-
+    def stp_status (self) :
+       pShow = subprocess.Popen(["brctl", "show"], stdout=subprocess.PIPE)
+       pGrep =  subprocess.Popen([ "grep","-w", self.bridge], stdin=pShow.stdout, stdout=subprocess.PIPE)
+       pShow.stdout.close()
+       (output, err)  = pGrep.communicate()
+       stp_status = output.split()[2]
+       if stp_status == "yes" :
+                return True
+       else :
+                return False
     def addbr (self) :
         
         (rc, out, err) = self.brctl (['addbr', self.bridge])
@@ -79,6 +88,12 @@ class LinuxBridge (object) :
     
         return
 
+    def confstp (self) :
+        (rc, out, err) = self.brctl (['stp', self.bridge, self.stp])
+        if rc != 0 :
+            raise Exception (err)
+
+        return
 
     def check (self) :
 
@@ -110,7 +125,16 @@ class LinuxBridge (object) :
             elif self.state == 'present' and not self.br_exists () :
                 self.addbr ()
                 changed = True
+		if self.stp == 'on' :
+			self.confstp ()
 
+            elif self.state == 'present' and self.br_exists () :
+                if self.stp == 'on' and not self.stp_status () :
+                        changed = True
+                        self.confstp ()
+                elif self.stp == 'off' and  self.stp_status () :
+			changed = True
+                        self.confstp ()
         except Exception, e :
             self.module.fail_json (msg = str (e))
 
@@ -127,6 +151,8 @@ def main () :
             'bridge' : { 'required' : True },
             'state' : {'default' : 'present', 
                        'choices' : ['present', 'absent']
+                       },
+            'stp' : { 'default' : 'off', 'choices' : ['on', 'off']
                        }
             },
         supports_check_mode = True,
