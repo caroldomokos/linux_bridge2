@@ -55,7 +55,6 @@ class LinuxBridge (object) :
 
         return 
 
-<<<<<<< HEAD
     def stp_status (self) :
        pShow = subprocess.Popen(["brctl", "show"], stdout=subprocess.PIPE)
        pGrep =  subprocess.Popen([ "grep","-w", self.bridge], stdin=pShow.stdout, stdout=subprocess.PIPE)
@@ -66,9 +65,7 @@ class LinuxBridge (object) :
                 return True
        else :
                 return False
-=======
 
->>>>>>> 067d16ce8b4ca538512cbfe9e8934024d44e27f3
     def addbr (self) :
         
         (rc, out, err) = self.brctl (['addbr', self.bridge])
@@ -92,14 +89,11 @@ class LinuxBridge (object) :
     
         return
 
-<<<<<<< HEAD
     def confstp (self) :
         (rc, out, err) = self.brctl (['stp', self.bridge, self.stp])
-=======
     def stpon (self) :
         (rc, out, err) =   self.brctl (['stp', self.bridge, self.stp])
 
->>>>>>> 067d16ce8b4ca538512cbfe9e8934024d44e27f3
         if rc != 0 :
             raise Exception (err)
 
@@ -136,7 +130,6 @@ class LinuxBridge (object) :
                 self.addbr ()
                 changed = True
 		if self.stp == 'on' :
-<<<<<<< HEAD
 			self.confstp ()
 
             elif self.state == 'present' and self.br_exists () :
@@ -150,7 +143,6 @@ class LinuxBridge (object) :
 			self.stpon ()
 			changed = True
 
->>>>>>> 067d16ce8b4ca538512cbfe9e8934024d44e27f3
         except Exception, e :
             self.module.fail_json (msg = str (e))
 
