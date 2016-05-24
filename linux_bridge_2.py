@@ -139,7 +139,6 @@ class LinuxBridge (object) :
                 elif self.stp == 'off' and  self.stp_status () :
 			changed = True
                         self.confstp ()
-=======
 			self.stpon ()
 			changed = True
 
